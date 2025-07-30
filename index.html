@@ -36,6 +36,7 @@
                <input type="number" min="1" name="pcTS" id="pcTS" placeholder="e.g. 3" />
             </div>
          </form>
+         <button id="pcButton">ANALYZE DATA</button>
          <p id="pcResult" class="result-box">Input all data for analyzing free assets requirement</p>
       </div>
    </div>
@@ -104,6 +105,19 @@
             `;
          }
 
+         if (tpPercentageAfterTS > 100) {
+            pcResultDisplay = `
+               AVG ${avg} • PRICE ${price}
+               <br />
+               Current Profit is ${textProfit}% with Minimum <b>${textTpLot} lot</b> at ${textTpPercentage}% total ownership to cover free asset
+               <br />
+               <br />
+               PRICE ${price} • TS ${ts}%
+               <br />
+               Trail Price is not working since amount of lots required above the ownership (>100%)
+            `;
+         }
+
          pcResult.innerHTML = pcResultDisplay;
       }
    </script>
@@ -117,10 +131,18 @@
 
       const pcProps = [pcAvg, pcPrice, pcLot];
 
-      // rt = Real Time
-      const rtResult = setInterval(() => {
+      // Manual
+      const pcButton = document.getElementById("pcButton");
+      pcButton.onclick = () => {
          const allFilled = pcProps.every((input) => input.value !== '');
          if (!allFilled) return;
+         pcAnalyzer(pcResult, pcAvg.value, pcPrice.value, pcLot.value, pcTS.value);
+      }
+
+      // rt = Real Time or Interval
+      const rtResult = setInterval(() => {
+         const allFilled = pcProps.every((input) => input.value !== '');
+         if (!allFilled) return;         
          pcAnalyzer(pcResult, pcAvg.value, pcPrice.value, pcLot.value, pcTS.value);
       }, 1000)
    </script>
