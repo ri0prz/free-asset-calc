@@ -30,6 +30,11 @@
                <label for="pcLot">Lot</label>
                <input type="number" min="1" name="pcLot" id="pcLot" placeholder="e.g. 3" />
             </div>
+
+            <div class="input-group">
+               <label for="pcTS">Trailing Stop (%)</label>
+               <input type="number" min="1" name="pcTS" id="pcTS" placeholder="e.g. 3" />
+            </div>
          </form>
          <p id="pcResult" class="result-box">Input all data for analyzing free assets requirement</p>
       </div>
@@ -37,11 +42,11 @@
 
 
    <script>
-      function pcAnalyzer(target, avg, price, lot) {
+      function pcAnalyzer(target, avg, price, lot, ts = 0) {
          const qty = lot * 100;
          const asset = avg * qty;
-         const priceLength = price - avg;
 
+         const priceLength = price - avg;
          const priceRatio = priceLength / avg;
          const profitPercentage = priceRatio * 100;
          const profitAsset = asset * priceRatio;
@@ -52,23 +57,54 @@
          const tpPercentage = assetRatio * 100;
          const tpLot = assetRatio * lot;
 
+         const tsRatio = ts / 100;
+         const priceAfterTS = price - (price * tsRatio);
+
+         const priceLengthAfterTS = priceAfterTS - avg;
+         const priceRatioAfterTS = priceLengthAfterTS / avg;
+         const profitPercentageAfterTS = priceRatioAfterTS * 100;
+         const profitAssetAfterTS = asset * priceRatioAfterTS;
+
+         const assetTotalAfterTS = asset + profitAssetAfterTS;
+         const assetRatioAfterTS = asset / assetTotalAfterTS;
+
+         const tpPercentageAfterTS = assetRatioAfterTS * 100;
+         const tpLotAfterTS = assetRatioAfterTS * lot;
+
          const textProfit = profitPercentage.toFixed(2);
          const textTpPercentage = tpPercentage.toFixed(2);
          const textTpLot = tpLot.toFixed(2);
+
+         const textProfitAfterTS = profitPercentageAfterTS.toFixed(2);
+         const textTpPercentageAfterTS = tpPercentageAfterTS.toFixed(2);
+         const textTpLotAfterTS = tpLotAfterTS.toFixed(2);
+         const textPriceAfterTS = priceAfterTS.toFixed(2);
+
+         let pcResultDisplay = `
+            AVG ${avg} • PRICE ${price}
+            <br />
+            Current Profit is ${textProfit}% with Minimum <b>${textTpLot} lot</b> at ${textTpPercentage}% total ownership to cover free asset
+         `;
 
          if (textProfit <= 0) {
             pcResult.textContent = "The data could not be identified since the price not profitable";
             return;
          }
 
-         pcResult.innerHTML = `
-            AVG ${avg} • PRICE ${price}
-            <br />
-            Current Profit is ${textProfit}% with Minimum <b>${textTpLot} lot</b> at ${textTpPercentage}% total ownership to cover free asset
-         `;
+         if (tsRatio > 0) {
+            pcResultDisplay = `
+               AVG ${avg} • PRICE ${price}
+               <br />
+               Current Profit is ${textProfit}% with Minimum <b>${textTpLot} lot</b> at ${textTpPercentage}% total ownership to cover free asset
+               <br />
+               <br />
+               PRICE ${price} • TS ${ts}%
+               <br />
+               Trail Price is ${textPriceAfterTS} with Minimum <b>${textTpLotAfterTS} lot</b> at ${textTpPercentageAfterTS}% total ownership to cover free asset
+            `;
+         }
 
-         console.log(`Asset Ratio: ${assetRatio}`);
-         console.log(`Required Minimum: ${tpLot} lot`);
+         pcResult.innerHTML = pcResultDisplay;
       }
    </script>
 
@@ -77,6 +113,7 @@
       const pcPrice = document.getElementById("pcPrice");
       const pcLot = document.getElementById("pcLot");
       const pcResult = document.getElementById("pcResult");
+      const pcTS = document.getElementById("pcTS");
 
       const pcProps = [pcAvg, pcPrice, pcLot];
 
@@ -84,7 +121,7 @@
       const rtResult = setInterval(() => {
          const allFilled = pcProps.every((input) => input.value !== '');
          if (!allFilled) return;
-         pcAnalyzer(pcResult, pcAvg.value, pcPrice.value, pcLot.value);
+         pcAnalyzer(pcResult, pcAvg.value, pcPrice.value, pcLot.value, pcTS.value);
       }, 1000)
    </script>
 </body>
