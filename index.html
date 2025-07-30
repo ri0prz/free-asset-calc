@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Main Page</title>
+
+   <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+   <div class="flex">
+      <div class="calculator-wrapper">
+         <form id="profitCalculator">
+            <h1>🐲</h1>
+            <h1>Free Asset Calculator</h1>
+
+            <div class="input-group">
+               <label for="pcAvg">Average Price</label>
+               <input type="number" min="1" name="pcAvg" id="pcAvg" placeholder="e.g. 100" />
+            </div>
+
+            <div class="input-group">
+               <label for="pcPrice">Current Price</label>
+               <input type="number" min="1" name="pcPrice" id="pcPrice" placeholder="e.g. 150" />
+            </div>
+
+            <div class="input-group">
+               <label for="pcLot">Lot</label>
+               <input type="number" min="1" name="pcLot" id="pcLot" placeholder="e.g. 3" />
+            </div>
+         </form>
+         <p id="pcResult" class="result-box">Input all data for analyzing free assets requirement</p>
+      </div>
+   </div>
+
+
+   <script>
+      function pcAnalyzer(target, avg, price, lot) {
+         const qty = lot * 100;
+         const asset = avg * qty;
+         const priceLength = price - avg;
+
+         const priceRatio = priceLength / avg;
+         const profitPercentage = priceRatio * 100;
+         const profitAsset = asset * priceRatio;
+
+         const assetTotal = asset + profitAsset;
+         const assetRatio = asset / assetTotal;
+
+         const tpPercentage = assetRatio * 100;
+         const tpLot = assetRatio * lot;
+
+         const textProfit = profitPercentage.toFixed(2);
+         const textTpPercentage = tpPercentage.toFixed(2);
+         const textTpLot = tpLot.toFixed(2);
+
+         if (textProfit <= 0) {
+            pcResult.textContent = "The data could not be identified since the price not profitable";
+            return;
+         }
+
+         pcResult.innerHTML = `
+            AVG ${avg} • PRICE ${price}
+            <br />
+            Current Profit is ${textProfit}% with Minimum <b>${textTpLot} lot</b> at ${textTpPercentage}% total ownership to cover free asset
+         `;
+
+         console.log(`Asset Ratio: ${assetRatio}`);
+         console.log(`Required Minimum: ${tpLot} lot`);
+      }
+   </script>
+
+   <script>
+      const pcAvg = document.getElementById("pcAvg");
+      const pcPrice = document.getElementById("pcPrice");
+      const pcLot = document.getElementById("pcLot");
+      const pcResult = document.getElementById("pcResult");
+
+      const pcProps = [pcAvg, pcPrice, pcLot];
+
+      // rt = Real Time
+      const rtResult = setInterval(() => {
+         const allFilled = pcProps.every((input) => input.value !== '');
+         if (!allFilled) return;
+         pcAnalyzer(pcResult, pcAvg.value, pcPrice.value, pcLot.value);
+      }, 1000)
+   </script>
+</body>
+
+</html>
